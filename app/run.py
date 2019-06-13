@@ -2,6 +2,7 @@ import json
 import plotly
 import pandas as pd
 import joblib
+import math
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -44,6 +45,20 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+
+    predictor = df['message']
+    target = df.drop(['message', 'genre', 'id', 'original'], axis=1)
+    target_column = target.columns
+    counts = target.sum().values
+
+    word_count = []
+    for col in target_column:
+        total_message_len = len(str(predictor[target.loc[target[col] == 1].index].sum()).split())
+        total_response = target[col].loc[target[col] == 1].sum()
+        value = total_message_len/total_response
+        if value == math.inf:
+            value = 0
+        word_count.append(value)
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -65,7 +80,46 @@ def index():
                     'title': "Genre"
                 }
             }
-        }
+        },
+        {
+            'data': [
+                Bar(
+                    x=target_column,
+                    y=counts
+                )
+            ],
+
+            'layout': {
+                'title': 'distribution of messages',
+                'yaxis': {
+                    'title': "Counts"
+                },
+                'xaxis': {
+                    'title': "Categories"
+                }
+            }
+	},
+        {
+            'data': [
+                Bar(
+                    x=target_column,
+                    y=word_count
+                )
+            ],
+
+            'layout': {
+                'title': 'Average message length',
+                'yaxis': {
+                    'title': "length"
+                },
+                'xaxis': {
+                    'title': "Categories"
+                }
+            }
+	},
+
+
+
     ]
     
     # encode plotly graphs in JSON

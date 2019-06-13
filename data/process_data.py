@@ -45,6 +45,7 @@ def clean_data(df):
     '''
     # drop duplicates
     df = df.drop_duplicates()
+    assert len(df[df.duplicated()]) == 0
     return df
 
 
@@ -54,7 +55,7 @@ def save_data(df, database_filename):
     '''
     # saving the sql database
     engine = create_engine("sqlite:///" + database_filename)
-    df.to_sql('InsertTableName', engine, index=False)
+    df.to_sql('InsertTableName', engine, index=False, if_exists='replace')
 
 
 def main():
